@@ -35,15 +35,20 @@ label{font-weight:800;display:block;margin:15px 0 7px}
 .done{background:#78c9a9;color:white}
 .preview{width:100%;max-height:260px;object-fit:contain;border-radius:16px;margin-top:10px;background:#f8fafc}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
-.book{border:2px solid #eef2f7;border-radius:20px;padding:12px;margin:10px 0}
-.book img{width:80px;height:100px;object-fit:cover;border-radius:10px;float:left;margin-right:12px}
+#bookList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.book{border:2px solid #eef2f7;border-radius:20px;padding:10px;background:#fff;overflow:hidden}
+.book img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:14px;display:block;margin-bottom:9px;background:#f4f4f4}
+.book .bookDate{font-size:13px;font-weight:800;color:#64748b;margin:2px 0}
+.book .bookStars{font-size:18px;letter-spacing:1px;margin:4px 0;color:#d79c20}
+.book .bookQuestion{font-size:12px;color:#7c8798;line-height:1.45;margin:7px 0}
+.book audio{width:100%;height:34px;margin-top:5px}
 .muted{font-size:13px;color:#7c8798}.clear{clear:both}
 .status{text-align:center;font-weight:800;margin-top:10px;line-height:1.5}
 .cameraBtn{width:100%;min-height:150px;border:3px dashed #86c8ee;border-radius:24px;background:#eef8ff;color:#334155;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-weight:900;font-size:20px;cursor:pointer}
 .cameraBtn .cameraIcon{font-size:58px;line-height:1}
 .cameraBtn small{font-size:13px;color:#64748b;font-weight:700}
 .photoDone{text-align:center;background:#eafaf3;border-radius:14px;padding:9px;margin-top:9px;font-weight:900;color:#39866b}
-@media(max-width:430px){.names{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:26px}}
+@media(max-width:430px){.names{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:26px}#bookList{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.book{padding:8px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -465,8 +470,8 @@ function resetForm(){
 }
 
 async function renderBooks(){
-  $("listTitle").textContent="🏦 "+user+"의 독서통장";
-  $("bookList").innerHTML="<p class='muted'>기록을 불러오고 있어요…</p>";
+  $("listTitle").textContent="📚 "+user+"의 책장";
+  $("bookList").innerHTML="<p class='muted'>책 표지를 불러오고 있어요…</p>";
 
   try{
     const data=await fetchRecords();
@@ -485,19 +490,29 @@ async function renderBooks(){
         ? new Date(b.created_at).toLocaleDateString("ko-KR")
         : "";
 
-      const photo=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.photo_path,3600);
-      const audio=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.audio_path,3600);
+      let photoUrl="";
+      let audioUrlSigned="";
 
-      const photoUrl=photo.data?.signedUrl||"";
-      const audioUrlSigned=audio.data?.signedUrl||"";
+      if(b.photo_path){
+        const photo=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.photo_path,3600);
+        if(!photo.error) photoUrl=photo.data?.signedUrl||"";
+        else console.warn("표지 불러오기 실패",photo.error);
+      }
+
+      if(b.audio_path){
+        const audio=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.audio_path,3600);
+        if(!audio.error) audioUrlSigned=audio.data?.signedUrl||"";
+        else console.warn("음성 불러오기 실패",audio.error);
+      }
 
       x.innerHTML=`
-        ${photoUrl?`<img src="${photoUrl}" alt="책 표지">`:""}
-        <b>${date}</b>
-        <p>⭐ ${"★".repeat(Number(b.rating)||0)}</p>
-        <p class="muted">🎲 ${b.question||""}</p>
-        ${audioUrlSigned?`<audio controls src="${audioUrlSigned}" style="width:calc(100% - 95px)"></audio>`:""}
-        <div class="clear"></div>
+        ${photoUrl
+          ? `<img src="${photoUrl}" alt="읽은 책 표지" loading="lazy">`
+          : `<div style="width:100%;aspect-ratio:3/4;border-radius:14px;background:#f6f1e8;display:flex;align-items:center;justify-content:center;font-size:44px">📖</div>`}
+        <div class="bookDate">${date}</div>
+        <div class="bookStars">${"★".repeat(Number(b.rating)||0)}${"☆".repeat(Math.max(0,5-(Number(b.rating)||0)))}</div>
+        <div class="bookQuestion">🎲 ${b.question||""}</div>
+        ${audioUrlSigned?`<audio controls src="${audioUrlSigned}"></audio>`:""}
       `;
       $("bookList").appendChild(x);
     }
@@ -506,6 +521,7 @@ async function renderBooks(){
     $("bookList").innerHTML="<p class='muted'>독서 기록을 불러오지 못했어요.</p>";
   }
 }
+
 </script>
 </body>
 </html>
