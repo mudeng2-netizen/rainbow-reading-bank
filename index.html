@@ -3,32 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>우리 반 디지털 독서통장</title>
+<title>무지개반 디지털 독서통장</title>
 <meta name="theme-color" content="#fffaf0">
 <style>
 :root{--pink:#ff7f9f;--yellow:#ffd96a;--green:#71c9a8;--blue:#86c8ee;--ink:#334155;--cream:#fffaf0}
-*{box-sizing:border-box} body{margin:0;background:var(--cream);font-family:"Pretendard","Noto Sans KR",sans-serif;color:var(--ink)}
-.app{max-width:680px;margin:auto;padding:18px}.hero{text-align:center;padding:14px}.hero h1{margin:4px;font-size:30px;color:#e85d83}.hero p{margin:6px;color:#64748b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);font-family:"Pretendard","Noto Sans KR",sans-serif;color:var(--ink)}
+.app{max-width:680px;margin:auto;padding:18px}
+.hero{text-align:center;padding:14px}
+.hero h1{margin:4px;font-size:30px;color:#e85d83}
+.hero p{margin:6px;color:#64748b}
 .card{background:white;border:3px solid #fde1e9;border-radius:28px;padding:20px;box-shadow:0 8px 25px #0000000c;margin-bottom:16px}
-.hidden{display:none}.names{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.nameBtn,.bigBtn,.smallBtn{border:0;border-radius:18px;min-height:52px;font-weight:800;font-size:17px;cursor:pointer}
-.nameBtn{background:#eef8ff;border:2px solid #cce9fa}.bigBtn{width:100%;background:var(--green);color:white;margin-top:12px}.secondary{background:#fff0b9;color:#735c00}.smallBtn{padding:8px 14px;background:#eef2f7;font-size:14px}
-.balance{background:#fff6d9;border:2px dashed #f1c94e;border-radius:20px;padding:16px;text-align:center;margin:12px 0}.balance strong{font-size:32px;color:#d99c00}
-label{font-weight:800;display:block;margin:15px 0 7px}.stars{display:flex;justify-content:center;gap:5px}.star{background:none;border:0;font-size:42px;color:#d7dce2;padding:2px;cursor:pointer}.star.on{color:#f8bd2d}
-.question{background:#fdf0f4;border:2px solid #f8c7d5;border-radius:22px;padding:18px;text-align:center;margin-top:16px}.question .q{font-size:20px;font-weight:900;line-height:1.55}.record{background:#f1f5f9}.recording{background:#ff6b6b;color:white}.done{background:#78c9a9;color:white}
+.hidden{display:none}
+.names{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.nameBtn,.bigBtn,.smallBtn{border:0;border-radius:18px;min-height:52px;font-weight:800;font-size:17px;cursor:pointer}
+.nameBtn{background:#eef8ff;border:2px solid #cce9fa}
+.bigBtn{width:100%;background:var(--green);color:white;margin-top:12px}
+.bigBtn:disabled{opacity:.55;cursor:not-allowed}
+.secondary{background:#fff0b9;color:#735c00}
+.smallBtn{padding:8px 14px;background:#eef2f7;font-size:14px}
+.balance{background:#fff6d9;border:2px dashed #f1c94e;border-radius:20px;padding:16px;text-align:center;margin:12px 0}
+.balance strong{font-size:32px;color:#d99c00}
+label{font-weight:800;display:block;margin:15px 0 7px}
+.stars{display:flex;justify-content:center;gap:5px}
+.star{background:none;border:0;font-size:42px;color:#d7dce2;padding:2px;cursor:pointer}
+.star.on{color:#f8bd2d}
+.question{background:#fdf0f4;border:2px solid #f8c7d5;border-radius:22px;padding:18px;text-align:center;margin-top:16px}
+.question .q{font-size:20px;font-weight:900;line-height:1.55}
+.record{background:#f1f5f9;color:#334155}
+.recording{background:#ff6b6b;color:white}
+.done{background:#78c9a9;color:white}
 .preview{width:100%;max-height:260px;object-fit:contain;border-radius:16px;margin-top:10px;background:#f8fafc}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.book{border:2px solid #eef2f7;border-radius:20px;padding:12px;margin:10px 0}.book img{width:80px;height:100px;object-fit:cover;border-radius:10px;float:left;margin-right:12px}.muted{font-size:13px;color:#7c8798}.clear{clear:both}.status{text-align:center;font-weight:800;margin-top:10px}
-input[type=file]{width:100%;padding:13px;border:2px dashed #cbd5e1;border-radius:16px;background:#fafafa}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.book{border:2px solid #eef2f7;border-radius:20px;padding:12px;margin:10px 0}
+.book img{width:80px;height:100px;object-fit:cover;border-radius:10px;float:left;margin-right:12px}
+.muted{font-size:13px;color:#7c8798}.clear{clear:both}
+.status{text-align:center;font-weight:800;margin-top:10px;line-height:1.5}
 .cameraBtn{width:100%;min-height:150px;border:3px dashed #86c8ee;border-radius:24px;background:#eef8ff;color:#334155;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-weight:900;font-size:20px;cursor:pointer}
-.cameraBtn .cameraIcon{font-size:58px;line-height:1}.cameraBtn small{font-size:13px;color:#64748b;font-weight:700}.photoDone{text-align:center;background:#eafaf3;border-radius:14px;padding:9px;margin-top:9px;font-weight:900;color:#39866b}
+.cameraBtn .cameraIcon{font-size:58px;line-height:1}
+.cameraBtn small{font-size:13px;color:#64748b;font-weight:700}
+.photoDone{text-align:center;background:#eafaf3;border-radius:14px;padding:9px;margin-top:9px;font-weight:900;color:#39866b}
 @media(max-width:430px){.names{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:26px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="app">
-  <div class="hero"><div style="font-size:42px">📚🏦</div><h1>우리 반 디지털 독서통장</h1><p>책을 읽고 생각을 목소리로 저금해요!</p></div>
+  <div class="hero">
+    <div style="font-size:42px">📚🏦</div>
+    <h1>무지개반 디지털 독서통장</h1>
+    <p>책을 읽고 생각을 목소리로 저금해요!</p>
+  </div>
 
-  <div id="testNotice" class="hidden" style="background:#fff3cd;border:2px solid #f2cf66;border-radius:16px;padding:12px;margin-bottom:14px;font-weight:800;font-size:14px;line-height:1.5">🧪 지금은 PC의 HTML 파일로 연 테스트 모드입니다.<br>사진과 화면은 확인할 수 있지만 🎤 마이크는 보안상 사용할 수 없습니다. 최종 QR 웹버전에서는 사용할 수 있어요.</div>
+  <div id="testNotice" class="hidden" style="background:#fff3cd;border:2px solid #f2cf66;border-radius:16px;padding:12px;margin-bottom:14px;font-weight:800;font-size:14px;line-height:1.5">
+    🧪 지금은 PC의 HTML 파일로 연 테스트 모드입니다.<br>
+    사진과 화면은 확인할 수 있지만 🎤 마이크는 보안상 사용할 수 없습니다. GitHub Pages HTTPS 주소에서는 사용할 수 있어요.
+  </div>
+
   <section id="login" class="card">
     <h2>👋 나는 누구일까요?</h2>
     <p class="muted">자기 이름을 눌러 주세요.</p>
@@ -38,7 +69,11 @@ input[type=file]{width:100%;padding:13px;border:2px dashed #cbd5e1;border-radius
   <section id="home" class="card hidden">
     <div class="row"><button id="backLogin" class="smallBtn">← 이름 다시 고르기</button></div>
     <h2 id="welcome"></h2>
-    <div class="balance">나의 독서 잔액<br><strong id="count">0권</strong><br><span id="badge">첫 책을 기다리고 있어요 🌱</span></div>
+    <div class="balance">
+      나의 독서 잔액<br>
+      <strong id="count">0권</strong><br>
+      <span id="badge">첫 책을 기다리고 있어요 🌱</span>
+    </div>
     <button id="newBook" class="bigBtn">📖 새 책 기록하기</button>
     <button id="viewBooks" class="bigBtn secondary">🏦 내가 모은 책 보기</button>
   </section>
@@ -46,6 +81,7 @@ input[type=file]{width:100%;padding:13px;border:2px dashed #cbd5e1;border-radius
   <section id="form" class="card hidden">
     <button id="formBack" class="smallBtn">← 돌아가기</button>
     <h2>📖 새 책 저금하기</h2>
+
     <label>1. 책 표지를 찍어 주세요.</label>
     <input id="bookImg" type="file" accept="image/*" capture="environment" style="display:none">
     <button id="cameraBtn" type="button" class="cameraBtn" aria-label="책 표지 사진 찍기">
@@ -56,16 +92,20 @@ input[type=file]{width:100%;padding:13px;border:2px dashed #cbd5e1;border-radius
     <div id="photoDone" class="hidden photoDone">✅ 표지가 찍혔어요!</div>
     <img id="preview" class="preview hidden" alt="선택한 책 표지">
     <button id="retakeBtn" type="button" class="smallBtn hidden" style="width:100%;margin-top:8px">📷 다시 찍기</button>
+
     <label>2. 이 책에 별을 몇 개 주고 싶나요?</label>
     <div id="stars" class="stars"></div>
+
     <div class="question">
       <div>🎲 오늘의 독서 질문</div>
       <p id="question" class="q"></p>
       <button id="speakQuestion" class="smallBtn">🔊 질문 듣기</button>
     </div>
+
     <label>3. 질문에 목소리로 대답해 보세요.</label>
     <button id="recordBtn" class="bigBtn record">🎤 눌러서 대답하기</button>
     <audio id="audioPreview" controls class="hidden" style="width:100%;margin-top:10px"></audio>
+
     <button id="save" class="bigBtn">💰 책 한 권 저금하기</button>
     <div id="status" class="status"></div>
   </section>
@@ -76,9 +116,8 @@ input[type=file]{width:100%;padding:13px;border:2px dashed #cbd5e1;border-radius
     <div id="bookList"></div>
   </section>
 </div>
-<script>
 
-if(location.protocol==="file:") document.getElementById("testNotice").classList.remove("hidden");
+<script>
 // ===== Supabase 연결 =====
 const SUPABASE_URL="https://dmccgjagmyplopqnjpzd.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ugOk9DOXt2z47AXHJ4J-gw_bt3r_rf2";
@@ -86,108 +125,387 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const STORAGE_BUCKET="reading-files";
 const RECORD_TABLE="reading_records";
 
-// ===== 선생님 설정 영역 =====
-// 실제 배포 때 아래 반 이름과 학생 명단만 바꾸면 됩니다.
+// ===== 학급 설정 =====
+// 화면에는 한글 이름이 보이고, Storage 경로에는 영문 ID만 사용합니다.
 const CLASS_NAME="무지개반";
-const STUDENTS=["강주안","김시후","김태경","김하윤","김혜원","손연재","송민서","신윤호","오수혁","오예빈","이건희","이로은","이예준","최도원","최라원","최민영","황아린","황우찬"];
-const QUESTIONS=[
-"가장 기억에 남는 장면은 무엇인가요? 왜 기억에 남았나요?",
-"가장 마음에 드는 인물은 누구인가요? 왜 마음에 들었나요?",
-"주인공에게 한마디 해 준다면 무슨 말을 하고 싶나요?",
-"내가 주인공이라면 어떻게 했을까요?",
-"이 책을 읽고 어떤 기분이 들었나요? 왜 그런 기분이 들었나요?",
-"친구에게 이 책을 소개한다면 뭐라고 말하고 싶나요?",
-"책 속에서 가장 재미있었던 일은 무엇인가요?",
-"책 속으로 들어갈 수 있다면 어디에 가 보고 싶나요?",
-"이 책에서 새롭게 알게 된 것이 있나요?",
-"이 책의 다음 이야기를 만든다면 어떤 일이 생길까요?",
-"나와 비슷하다고 생각한 인물이 있나요? 어떤 점이 비슷한가요?",
-"책 속 인물과 친구가 된다면 누구와 친구가 되고 싶나요?"
+const CLASS_STORAGE_ID="rainbow";
+
+const STUDENTS=[
+  {name:"강주안",id:"student01"},
+  {name:"김시후",id:"student02"},
+  {name:"김태경",id:"student03"},
+  {name:"김하윤",id:"student04"},
+  {name:"김혜원",id:"student05"},
+  {name:"손연재",id:"student06"},
+  {name:"송민서",id:"student07"},
+  {name:"신윤호",id:"student08"},
+  {name:"오수혁",id:"student09"},
+  {name:"오예빈",id:"student10"},
+  {name:"이건희",id:"student11"},
+  {name:"이로은",id:"student12"},
+  {name:"이예준",id:"student13"},
+  {name:"최도원",id:"student14"},
+  {name:"최라원",id:"student15"},
+  {name:"최민영",id:"student16"},
+  {name:"황아린",id:"student17"},
+  {name:"황우찬",id:"student18"}
 ];
-document.querySelector(".hero h1").textContent=CLASS_NAME+" 디지털 독서통장";
-let user="",rate=0,question="",recorder=null,chunks=[],audioBlob=null,audioUrl=null;
+
+const QUESTIONS=[
+  "가장 기억에 남는 장면은 무엇인가요? 왜 기억에 남았나요?",
+  "가장 마음에 드는 인물은 누구인가요? 왜 마음에 들었나요?",
+  "주인공에게 한마디 해 준다면 무슨 말을 하고 싶나요?",
+  "내가 주인공이라면 어떻게 했을까요?",
+  "이 책을 읽고 어떤 기분이 들었나요? 왜 그런 기분이 들었나요?",
+  "친구에게 이 책을 소개한다면 뭐라고 말하고 싶나요?",
+  "책 속에서 가장 재미있었던 일은 무엇인가요?",
+  "책 속으로 들어갈 수 있다면 어디에 가 보고 싶나요?",
+  "이 책에서 새롭게 알게 된 것이 있나요?",
+  "이 책의 다음 이야기를 만든다면 어떤 일이 생길까요?",
+  "나와 비슷하다고 생각한 인물이 있나요? 어떤 점이 비슷한가요?",
+  "책 속 인물과 친구가 된다면 누구와 친구가 되고 싶나요?"
+];
+
+let user="";
+let userStorageId="";
+let rate=0;
+let question="";
+let recorder=null;
+let chunks=[];
+let audioBlob=null;
+let audioUrl=null;
+
 const $=id=>document.getElementById(id);
-function show(id){["login","home","form","list"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
-function key(n){return "readingBank_"+n}
-function records(){try{return JSON.parse(localStorage.getItem(key(user))||"[]")}catch{return[]}}
-function updateHome(){let n=records().length;$("welcome").textContent="🌈 "+user+"의 독서통장";$("count").textContent=n+"권";$("badge").textContent=n>=30?"🏆 독서왕!":n>=20?"🌟 20권 달성!":n>=10?"🎉 10권 달성!":n>=5?"👏 5권 달성!":"책을 차곡차곡 모아 보아요 🌱"}
-STUDENTS.forEach(n=>{let b=document.createElement("button");b.className="nameBtn";b.textContent=n;b.addEventListener("click",()=>{user=n;updateHome();show("home")});$("names").appendChild(b)});
-for(let i=1;i<=5;i++){let b=document.createElement("button");b.className="star";b.textContent="★";b.setAttribute("aria-label",i+"점");b.addEventListener("click",()=>{rate=i;[...$("stars").children].forEach((s,j)=>s.classList.toggle("on",j<i))});$("stars").appendChild(b)}
-$("backLogin").onclick=()=>show("login");$("formBack").onclick=()=>{updateHome();show("home")};$("listBack").onclick=()=>{updateHome();show("home")};
-$("newBook").onclick=()=>{resetForm();question=QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)];$("question").textContent=question;show("form")};
-$("viewBooks").onclick=()=>{renderBooks();show("list")};
+
+if(location.protocol==="file:"){
+  $("testNotice").classList.remove("hidden");
+}
+
+function show(id){
+  ["login","home","form","list"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
+}
+
+function badgeText(n){
+  return n>=30?"🏆 독서왕!":
+         n>=20?"🌟 20권 달성!":
+         n>=10?"🎉 10권 달성!":
+         n>=5 ?"👏 5권 달성!":
+                "책을 차곡차곡 모아 보아요 🌱";
+}
+
+async function fetchRecords(){
+  if(!user) return [];
+  const {data,error}=await db
+    .from(RECORD_TABLE)
+    .select("*")
+    .eq("class_name",CLASS_NAME)
+    .eq("student_name",user)
+    .order("created_at",{ascending:false});
+  if(error) throw error;
+  return data||[];
+}
+
+async function updateHome(){
+  $("welcome").textContent="🌈 "+user+"의 독서통장";
+  $("count").textContent="…";
+  $("badge").textContent="독서통장을 확인하고 있어요.";
+  try{
+    const data=await fetchRecords();
+    const n=data.length;
+    $("count").textContent=n+"권";
+    $("badge").textContent=badgeText(n);
+  }catch(e){
+    console.error(e);
+    $("count").textContent="0권";
+    $("badge").textContent="기록을 불러오지 못했어요.";
+  }
+}
+
+// 학생 이름 버튼
+STUDENTS.forEach(student=>{
+  const b=document.createElement("button");
+  b.className="nameBtn";
+  b.textContent=student.name;
+  b.addEventListener("click",async()=>{
+    user=student.name;
+    userStorageId=student.id;
+    show("home");
+    await updateHome();
+  });
+  $("names").appendChild(b);
+});
+
+// 별점
+for(let i=1;i<=5;i++){
+  const b=document.createElement("button");
+  b.className="star";
+  b.textContent="★";
+  b.setAttribute("aria-label",i+"점");
+  b.addEventListener("click",()=>{
+    rate=i;
+    [...$("stars").children].forEach((s,j)=>s.classList.toggle("on",j<i));
+  });
+  $("stars").appendChild(b);
+}
+
+$("backLogin").onclick=()=>show("login");
+$("formBack").onclick=async()=>{show("home");await updateHome();};
+$("listBack").onclick=async()=>{show("home");await updateHome();};
+
+$("newBook").onclick=()=>{
+  resetForm();
+  question=QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)];
+  $("question").textContent=question;
+  show("form");
+};
+
+$("viewBooks").onclick=async()=>{
+  show("list");
+  await renderBooks();
+};
+
+// 사진
 $("cameraBtn").onclick=()=>$("bookImg").click();
 $("retakeBtn").onclick=()=>$("bookImg").click();
+
 $("bookImg").addEventListener("change",e=>{
- let f=e.target.files[0];
- if(!f)return;
- let reader=new FileReader();
- reader.onload=()=>{
-   $("preview").src=reader.result;
-   $("preview").classList.remove("hidden");
-   $("cameraBtn").classList.add("hidden");
-   $("photoDone").classList.remove("hidden");
-   $("retakeBtn").classList.remove("hidden");
- };
- reader.onerror=()=>alert("사진을 불러오지 못했어요. 다시 찍어 주세요.");
- reader.readAsDataURL(f);
-});
-$("speakQuestion").onclick=()=>{if("speechSynthesis" in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(question);u.lang="ko-KR";u.rate=.85;speechSynthesis.speak(u)}else alert("이 태블릿에서는 질문 읽기 기능을 사용할 수 없어요.")};
-$("recordBtn").onclick=async()=>{
- if(recorder&&recorder.state==="recording"){recorder.stop();return}
- if(location.protocol==="file:"){
-   alert("지금은 HTML 파일을 직접 연 테스트 화면이라 마이크 녹음이 차단됩니다. 사진·화면 흐름은 테스트할 수 있고, 최종 HTTPS 웹주소(QR)에서는 녹음이 작동하도록 구성합니다.");
-   return;
- }
- if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
-   alert("이 브라우저에서는 음성 녹음을 지원하지 않아요. Chrome 또는 Edge 최신 버전으로 열어 주세요.");
-   return;
- }
- try{
-  let stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream);
-  recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
-  recorder.onstop=()=>{
-    audioBlob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
-    if(audioUrl)URL.revokeObjectURL(audioUrl);
-    audioUrl=URL.createObjectURL(audioBlob);
-    $("audioPreview").src=audioUrl;$("audioPreview").classList.remove("hidden");
-    $("recordBtn").textContent="🔄 다시 말하기";$("recordBtn").className="bigBtn done";
-    stream.getTracks().forEach(t=>t.stop())
+  const f=e.target.files[0];
+  if(!f)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    $("preview").src=reader.result;
+    $("preview").classList.remove("hidden");
+    $("cameraBtn").classList.add("hidden");
+    $("photoDone").classList.remove("hidden");
+    $("retakeBtn").classList.remove("hidden");
   };
-  recorder.start();
-  $("recordBtn").textContent="🔴 말하는 중… 다 말했으면 눌러요";$("recordBtn").className="bigBtn recording";
- }catch(e){
-   alert("마이크를 사용할 수 없어요. 주소창의 사이트 권한에서 마이크를 허용해 주세요.");
- }
+  reader.onerror=()=>alert("사진을 불러오지 못했어요. 다시 찍어 주세요.");
+  reader.readAsDataURL(f);
+});
+
+// 질문 읽기
+$("speakQuestion").onclick=()=>{
+  if("speechSynthesis" in window){
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(question);
+    u.lang="ko-KR";
+    u.rate=.85;
+    speechSynthesis.speak(u);
+  }else{
+    alert("이 태블릿에서는 질문 읽기 기능을 사용할 수 없어요.");
+  }
 };
-function fileToDataURL(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-function blobToDataURL(blob){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob)})}
+
+// 음성 녹음
+$("recordBtn").onclick=async()=>{
+  if(recorder&&recorder.state==="recording"){
+    recorder.stop();
+    return;
+  }
+
+  if(location.protocol==="file:"){
+    alert("HTML 파일을 직접 연 화면에서는 마이크 녹음이 차단될 수 있어요. GitHub Pages HTTPS 주소에서 사용해 주세요.");
+    return;
+  }
+
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+    alert("이 브라우저에서는 음성 녹음을 지원하지 않아요. Chrome 또는 Edge 최신 버전으로 열어 주세요.");
+    return;
+  }
+
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks=[];
+
+    let options={};
+    const preferred=[
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus"
+    ];
+    const supported=preferred.find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t));
+    if(supported) options.mimeType=supported;
+
+    recorder=new MediaRecorder(stream,options);
+
+    recorder.ondataavailable=e=>{
+      if(e.data&&e.data.size) chunks.push(e.data);
+    };
+
+    recorder.onstop=()=>{
+      audioBlob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+      if(audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl=URL.createObjectURL(audioBlob);
+      $("audioPreview").src=audioUrl;
+      $("audioPreview").classList.remove("hidden");
+      $("recordBtn").textContent="🔄 다시 말하기";
+      $("recordBtn").className="bigBtn done";
+      stream.getTracks().forEach(t=>t.stop());
+    };
+
+    recorder.start();
+    $("recordBtn").textContent="🔴 말하는 중… 다 말했으면 눌러요";
+    $("recordBtn").className="bigBtn recording";
+
+  }catch(e){
+    console.error(e);
+    alert("마이크를 사용할 수 없어요. 주소창의 사이트 권한에서 마이크를 허용해 주세요.");
+  }
+};
+
+// 파일 확장자를 안전하게 결정
+function imageExtension(file){
+  const type=(file.type||"").toLowerCase();
+  if(type.includes("png")) return "png";
+  if(type.includes("webp")) return "webp";
+  if(type.includes("gif")) return "gif";
+  if(type.includes("heic")) return "heic";
+  return "jpg";
+}
+
+function audioExtension(blob){
+  const type=(blob.type||"").toLowerCase();
+  if(type.includes("mp4")) return "m4a";
+  if(type.includes("ogg")) return "ogg";
+  return "webm";
+}
+
+// 저장
 $("save").onclick=async()=>{
- let file=$("bookImg").files[0];
- if(!file)return alert("책 표지 사진을 먼저 올려 주세요.");
- if(!rate)return alert("별점을 눌러 주세요.");
- if(!audioBlob)return alert("질문에 목소리로 대답해 주세요.");
- $("save").disabled=true;$("status").textContent="☁️ 온라인 독서통장에 저금하는 중이에요…";
- try{
-  const stamp=Date.now()+"_"+Math.random().toString(36).slice(2,8);
-  const safe=s=>s.replace(/[^0-9A-Za-z가-힣_-]/g,"_");
-  const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
-  const aext=(audioBlob.type||"").includes("mp4")?"m4a":((audioBlob.type||"").includes("ogg")?"ogg":"webm");
-  const base=safe(CLASS_NAME)+"/"+safe(user)+"/"+stamp;
-  const photoPath=base+"/cover."+ext, audioPath=base+"/answer."+aext;
-  const u1=await db.storage.from(STORAGE_BUCKET).upload(photoPath,file,{contentType:file.type||"image/jpeg"});
-  if(u1.error)throw u1.error;
-  const u2=await db.storage.from(STORAGE_BUCKET).upload(audioPath,audioBlob,{contentType:audioBlob.type||"audio/webm"});
-  if(u2.error)throw u2.error;
-  const ins=await db.from(RECORD_TABLE).insert({student_name:user,class_name:CLASS_NAME,rating:rate,question,photo_path:photoPath,audio_path:audioPath});
-  if(ins.error)throw ins.error;
-  $("status").textContent="🎉 책 한 권을 독서통장에 저금했어요!";
-  setTimeout(()=>{show("login")},1000);
- }catch(e){console.error(e);$("status").textContent="저장하지 못했어요.";alert("온라인 저장 중 문제가 생겼어요.\\n"+(e.message||e))}
- finally{$("save").disabled=false}
+  const file=$("bookImg").files[0];
+
+  if(!user||!userStorageId) return alert("학생 이름을 다시 선택해 주세요.");
+  if(!file) return alert("책 표지 사진을 먼저 찍어 주세요.");
+  if(!rate) return alert("별점을 눌러 주세요.");
+  if(!audioBlob) return alert("질문에 목소리로 대답해 주세요.");
+
+  $("save").disabled=true;
+  $("status").textContent="☁️ 온라인 독서통장에 저금하는 중이에요…";
+
+  let photoPath="";
+  let audioPath="";
+
+  try{
+    const stamp=Date.now()+"-"+Math.random().toString(36).slice(2,8);
+
+    // 중요: Storage object key에는 한글 학생명/반명을 사용하지 않습니다.
+    const base=CLASS_STORAGE_ID+"/"+userStorageId+"/"+stamp;
+    photoPath=base+"/cover."+imageExtension(file);
+    audioPath=base+"/answer."+audioExtension(audioBlob);
+
+    const u1=await db.storage
+      .from(STORAGE_BUCKET)
+      .upload(photoPath,file,{
+        contentType:file.type||"image/jpeg",
+        upsert:false
+      });
+    if(u1.error) throw new Error("표지 사진 저장 실패: "+u1.error.message);
+
+    const u2=await db.storage
+      .from(STORAGE_BUCKET)
+      .upload(audioPath,audioBlob,{
+        contentType:audioBlob.type||"audio/webm",
+        upsert:false
+      });
+    if(u2.error){
+      await db.storage.from(STORAGE_BUCKET).remove([photoPath]);
+      throw new Error("음성 저장 실패: "+u2.error.message);
+    }
+
+    const ins=await db.from(RECORD_TABLE).insert({
+      student_name:user,
+      class_name:CLASS_NAME,
+      rating:rate,
+      question:question,
+      photo_path:photoPath,
+      audio_path:audioPath
+    });
+
+    if(ins.error){
+      await db.storage.from(STORAGE_BUCKET).remove([photoPath,audioPath]);
+      throw new Error("독서 기록 저장 실패: "+ins.error.message);
+    }
+
+    $("status").textContent="🎉 책 한 권을 독서통장에 저금했어요!";
+    setTimeout(async()=>{
+      resetForm();
+      show("home");
+      await updateHome();
+    },900);
+
+  }catch(e){
+    console.error(e);
+    $("status").textContent="저장하지 못했어요.";
+    alert("온라인 저장 중 문제가 생겼어요.\n"+(e.message||e));
+  }finally{
+    $("save").disabled=false;
+  }
 };
-function resetForm(){$("bookImg").value="";$("preview").classList.add("hidden");$("cameraBtn").classList.remove("hidden");$("photoDone").classList.add("hidden");$("retakeBtn").classList.add("hidden");$("audioPreview").classList.add("hidden");$("status").textContent="";rate=0;audioBlob=null;audioUrl=null;[...$("stars").children].forEach(s=>s.classList.remove("on"));$("recordBtn").textContent="🎤 눌러서 대답하기";$("recordBtn").className="bigBtn record"}
-function renderBooks(){let d=records().slice().reverse();$("listTitle").textContent="🏦 "+user+"의 독서통장";$("bookList").innerHTML=d.length?"":"<p class='muted'>아직 저금한 책이 없어요.</p>";d.forEach(b=>{let x=document.createElement("div");x.className="book";x.innerHTML=`<img src="${b.img}" alt="책 표지"><b>${b.date}</b><p>⭐ ${"★".repeat(b.rate)}</p><p class="muted">🎲 ${b.question}</p><audio controls src="${b.audio}" style="width:calc(100% - 95px)"></audio><div class="clear"></div>`;$("bookList").appendChild(x)})}
+
+function resetForm(){
+  $("bookImg").value="";
+  $("preview").src="";
+  $("preview").classList.add("hidden");
+  $("cameraBtn").classList.remove("hidden");
+  $("photoDone").classList.add("hidden");
+  $("retakeBtn").classList.add("hidden");
+  $("audioPreview").src="";
+  $("audioPreview").classList.add("hidden");
+  $("status").textContent="";
+  rate=0;
+  audioBlob=null;
+  if(audioUrl){
+    URL.revokeObjectURL(audioUrl);
+    audioUrl=null;
+  }
+  [...$("stars").children].forEach(s=>s.classList.remove("on"));
+  $("recordBtn").textContent="🎤 눌러서 대답하기";
+  $("recordBtn").className="bigBtn record";
+}
+
+async function renderBooks(){
+  $("listTitle").textContent="🏦 "+user+"의 독서통장";
+  $("bookList").innerHTML="<p class='muted'>기록을 불러오고 있어요…</p>";
+
+  try{
+    const data=await fetchRecords();
+    $("bookList").innerHTML="";
+
+    if(!data.length){
+      $("bookList").innerHTML="<p class='muted'>아직 저금한 책이 없어요.</p>";
+      return;
+    }
+
+    for(const b of data){
+      const x=document.createElement("div");
+      x.className="book";
+
+      const date=b.created_at
+        ? new Date(b.created_at).toLocaleDateString("ko-KR")
+        : "";
+
+      const photo=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.photo_path,3600);
+      const audio=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.audio_path,3600);
+
+      const photoUrl=photo.data?.signedUrl||"";
+      const audioUrlSigned=audio.data?.signedUrl||"";
+
+      x.innerHTML=`
+        ${photoUrl?`<img src="${photoUrl}" alt="책 표지">`:""}
+        <b>${date}</b>
+        <p>⭐ ${"★".repeat(Number(b.rating)||0)}</p>
+        <p class="muted">🎲 ${b.question||""}</p>
+        ${audioUrlSigned?`<audio controls src="${audioUrlSigned}" style="width:calc(100% - 95px)"></audio>`:""}
+        <div class="clear"></div>
+      `;
+      $("bookList").appendChild(x);
+    }
+  }catch(e){
+    console.error(e);
+    $("bookList").innerHTML="<p class='muted'>독서 기록을 불러오지 못했어요.</p>";
+  }
+}
 </script>
 </body>
 </html>
