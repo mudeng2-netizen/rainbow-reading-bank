@@ -77,7 +77,7 @@ input[type=file]{width:100%;padding:13px;border:2px dashed #cbd5e1;border-radius
   </section>
 </div>
 <script>
-document.querySelector(".hero h1").textContent=CLASS_NAME+" 디지털 독서통장";
+
 if(location.protocol==="file:") document.getElementById("testNotice").classList.remove("hidden");
 // ===== Supabase 연결 =====
 const SUPABASE_URL="https://dmccgjagmyplopqnjpzd.supabase.co";
@@ -89,7 +89,7 @@ const RECORD_TABLE="reading_records";
 // ===== 선생님 설정 영역 =====
 // 실제 배포 때 아래 반 이름과 학생 명단만 바꾸면 됩니다.
 const CLASS_NAME="무지개반";
-const STUDENTS=["김하늘","이도윤","박서윤","최민준","정지우","강예준","윤채원","한시우","오유나","송지호","임서아","조현우","신다은","권도하","황아린","강주안","이로은","최민영"];
+const STUDENTS=["강주안","김시후","김태경","김하윤","김혜원","손연재","송민서","신윤호","오수혁","오예빈","이건희","이로은","이예준","최도원","최라원","최민영","황아린","황우찬"];
 const QUESTIONS=[
 "가장 기억에 남는 장면은 무엇인가요? 왜 기억에 남았나요?",
 "가장 마음에 드는 인물은 누구인가요? 왜 마음에 들었나요?",
@@ -104,6 +104,7 @@ const QUESTIONS=[
 "나와 비슷하다고 생각한 인물이 있나요? 어떤 점이 비슷한가요?",
 "책 속 인물과 친구가 된다면 누구와 친구가 되고 싶나요?"
 ];
+document.querySelector(".hero h1").textContent=CLASS_NAME+" 디지털 독서통장";
 let user="",rate=0,question="",recorder=null,chunks=[],audioBlob=null,audioUrl=null;
 const $=id=>document.getElementById(id);
 function show(id){["login","home","form","list"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
