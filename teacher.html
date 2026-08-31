@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>무지개반 독서통장 · 교사용 관리</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:#25324a}
+.wrap{max-width:1100px;margin:auto;padding:22px}
+.hero{background:white;border-radius:24px;padding:22px;margin-bottom:16px;box-shadow:0 5px 22px #26334d12}
+.hero h1{margin:0 0 6px;font-size:28px}.hero p{margin:0;color:#6b768a}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.stat{background:white;border-radius:18px;padding:16px;text-align:center;box-shadow:0 4px 16px #26334d0c}
+.stat strong{display:block;font-size:28px;margin-top:4px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+select,button{font:inherit;border-radius:12px;border:1px solid #d9e0ea;background:white;padding:10px 13px}
+button{cursor:pointer;font-weight:800}
+#status{font-weight:700;color:#667085;margin:10px 0}
+.studentGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:12px 0 20px}
+.studentBtn{padding:10px 6px}.studentBtn.active{outline:3px solid #9bc7ff;background:#edf6ff}
+.studentBtn small{display:block;color:#758197;font-weight:600;margin-top:3px}
+.records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.record{background:white;border-radius:20px;padding:13px;box-shadow:0 4px 18px #26334d10;overflow:hidden}
+.recordTop{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:9px}
+.name{font-weight:900;font-size:18px}.date{font-size:13px;color:#778196}
+.cover{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:14px;background:#f1f3f6}
+.noCover{width:100%;aspect-ratio:3/4;border-radius:14px;background:#f6f1e8;display:flex;align-items:center;justify-content:center;font-size:52px}
+.stars{font-size:19px;color:#d79c20;margin:9px 0 5px}
+.question{font-size:14px;line-height:1.5;background:#f7f9fc;border-radius:12px;padding:9px;margin:6px 0 10px}
+audio{width:100%}
+.empty{grid-column:1/-1;background:white;border-radius:18px;padding:30px;text-align:center;color:#778196}
+@media(max-width:800px){.records{grid-template-columns:repeat(2,1fr)}.studentGrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.wrap{padding:12px}.summary{grid-template-columns:1fr}.records{grid-template-columns:1fr}.studentGrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>👩‍🏫 무지개반 독서통장 관리</h1>
+    <p>학생별 독서 기록과 녹음 답변을 한곳에서 확인합니다.</p>
+  </div>
+
+  <div class="summary">
+    <div class="stat">전체 독서 기록<strong id="total">-</strong></div>
+    <div class="stat">기록한 학생<strong id="activeStudents">-</strong></div>
+    <div class="stat">오늘 기록<strong id="today">-</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <select id="sort">
+      <option value="new">최근 기록부터</option>
+      <option value="old">오래된 기록부터</option>
+    </select>
+    <button id="allBtn">🌈 전체 학생 보기</button>
+    <button id="refreshBtn">↻ 새로고침</button>
+  </div>
+
+  <div id="studentGrid" class="studentGrid"></div>
+  <div id="status">기록을 불러오는 중입니다…</div>
+  <div id="records" class="records"></div>
+</div>
+
+<script>
+const SUPABASE_URL="https://dmccgjagmyplopqnjpzd.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ugOk9DOXt2z47AXHJ4J-gw_bt3r_rf2";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const STORAGE_BUCKET="reading-files";
+const RECORD_TABLE="reading_records";
+const CLASS_NAME="무지개반";
+const STUDENTS=[
+"강주안","김시후","김태경","김하윤","김혜원","손연재","송민서","신윤호","오수혁",
+"오예빈","이건희","이로은","이예준","최도원","최라원","최민영","황아린","황우찬"
+];
+
+let allRecords=[];
+let selectedStudent="";
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+function localDay(d){ return new Date(d).toLocaleDateString("ko-KR"); }
+function todayKey(){ return new Date().toLocaleDateString("ko-KR"); }
+
+async function signed(path){
+  if(!path) return "";
+  const {data,error}=await db.storage.from(STORAGE_BUCKET).createSignedUrl(path,3600);
+  return error ? "" : (data?.signedUrl||"");
+}
+
+function counts(){
+  $("total").textContent=allRecords.length+"권";
+  $("activeStudents").textContent=new Set(allRecords.map(x=>x.student_name)).size+"명";
+  $("today").textContent=allRecords.filter(x=>localDay(x.created_at)===todayKey()).length+"권";
+}
+
+function renderStudents(){
+  const byName={};
+  STUDENTS.forEach(n=>byName[n]=0);
+  allRecords.forEach(r=>byName[r.student_name]=(byName[r.student_name]||0)+1);
+  $("studentGrid").innerHTML="";
+  STUDENTS.forEach(name=>{
+    const b=document.createElement("button");
+    b.className="studentBtn"+(selectedStudent===name?" active":"");
+    b.innerHTML=`${esc(name)}<small>${byName[name]||0}권</small>`;
+    b.onclick=()=>{selectedStudent=name;renderStudents();renderRecords();};
+    $("studentGrid").appendChild(b);
+  });
+}
+
+async function renderRecords(){
+  let list=selectedStudent ? allRecords.filter(r=>r.student_name===selectedStudent) : [...allRecords];
+  const asc=$("sort").value==="old";
+  list.sort((a,b)=>asc ? new Date(a.created_at)-new Date(b.created_at) : new Date(b.created_at)-new Date(a.created_at));
+
+  $("status").textContent=selectedStudent
+    ? `${selectedStudent} · ${list.length}권`
+    : `전체 학생 · ${list.length}권`;
+  $("records").innerHTML="";
+
+  if(!list.length){
+    $("records").innerHTML='<div class="empty">아직 저장된 독서 기록이 없습니다.</div>';
+    return;
+  }
+
+  for(const r of list){
+    const card=document.createElement("div");
+    card.className="record";
+    card.innerHTML=`<div class="recordTop"><span class="name">${esc(r.student_name)}</span><span class="date">${localDay(r.created_at)}</span></div>
+      <div class="coverSlot"><div class="noCover">📖</div></div>
+      <div class="stars">${"★".repeat(Number(r.rating)||0)}${"☆".repeat(Math.max(0,5-(Number(r.rating)||0)))}</div>
+      <div class="question">🎲 ${esc(r.question||"질문 기록 없음")}</div>
+      <div class="audioSlot">${r.audio_path?"녹음을 불러오는 중…":"녹음 없음"}</div>`;
+    $("records").appendChild(card);
+
+    if(r.photo_path){
+      signed(r.photo_path).then(url=>{
+        if(url) card.querySelector(".coverSlot").innerHTML=`<img class="cover" src="${url}" alt="${esc(r.student_name)}의 책 표지" loading="lazy">`;
+      });
+    }
+    if(r.audio_path){
+      signed(r.audio_path).then(url=>{
+        card.querySelector(".audioSlot").innerHTML=url
+          ? `<audio controls preload="none" src="${url}"></audio>`
+          : "녹음을 불러오지 못했습니다.";
+      });
+    }
+  }
+}
+
+async function load(){
+  $("status").textContent="기록을 불러오는 중입니다…";
+  const {data,error}=await db.from(RECORD_TABLE).select("*").eq("class_name",CLASS_NAME).order("created_at",{ascending:false});
+  if(error){
+    console.error(error);
+    $("status").textContent="기록을 불러오지 못했습니다.";
+    return;
+  }
+  allRecords=data||[];
+  counts(); renderStudents(); renderRecords();
+}
+
+$("allBtn").onclick=()=>{selectedStudent="";renderStudents();renderRecords();};
+$("refreshBtn").onclick=load;
+$("sort").onchange=renderRecords;
+load();
+</script>
+</body>
+</html>
