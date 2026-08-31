@@ -29,6 +29,9 @@ button{cursor:pointer;font-weight:800}
 .stars{font-size:19px;color:#d79c20;margin:9px 0 5px}
 .question{font-size:14px;line-height:1.5;background:#f7f9fc;border-radius:12px;padding:9px;margin:6px 0 10px}
 audio{width:100%}
+.deleteBtn{width:100%;margin-top:10px;border:1px solid #efb2b2;background:#fff5f5;color:#b42318;font-weight:900}
+.deleteBtn:hover{background:#ffe8e8}
+.deleteBtn:disabled{opacity:.55;cursor:not-allowed}
 .empty{grid-column:1/-1;background:white;border-radius:18px;padding:30px;text-align:center;color:#778196}
 @media(max-width:800px){.records{grid-template-columns:repeat(2,1fr)}.studentGrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:520px){.wrap{padding:12px}.summary{grid-template-columns:1fr}.records{grid-template-columns:1fr}.studentGrid{grid-template-columns:repeat(2,1fr)}}
@@ -131,8 +134,11 @@ async function renderRecords(){
       <div class="coverSlot"><div class="noCover">📖</div></div>
       <div class="stars">${"★".repeat(Number(r.rating)||0)}${"☆".repeat(Math.max(0,5-(Number(r.rating)||0)))}</div>
       <div class="question">🎲 ${esc(r.question||"질문 기록 없음")}</div>
-      <div class="audioSlot">${r.audio_path?"녹음을 불러오는 중…":"녹음 없음"}</div>`;
+      <div class="audioSlot">${r.audio_path?"녹음을 불러오는 중…":"녹음 없음"}</div>
+      <button class="deleteBtn" type="button">🗑️ 이 기록 삭제</button>`;
     $("records").appendChild(card);
+
+    card.querySelector(".deleteBtn").onclick=()=>deleteRecord(r,card);
 
     if(r.photo_path){
       signed(r.photo_path).then(url=>{
@@ -146,6 +152,45 @@ async function renderRecords(){
           : "녹음을 불러오지 못했습니다.";
       });
     }
+  }
+}
+
+
+async function deleteRecord(r,card){
+  const who=r.student_name||"학생";
+  const ok=confirm(`${who}의 이 독서 기록을 삭제할까요?\n\n삭제하면 책 표지와 녹음도 함께 삭제되며 되돌릴 수 없습니다.`);
+  if(!ok) return;
+
+  const btn=card.querySelector(".deleteBtn");
+  btn.disabled=true;
+  btn.textContent="삭제하는 중…";
+
+  try{
+    // 1) DB 기록 삭제
+    const {error:dbError}=await db.from(RECORD_TABLE).delete().eq("id",r.id);
+    if(dbError) throw new Error("독서 기록 삭제 실패: "+dbError.message);
+
+    // 2) 연결된 Storage 파일 삭제
+    const paths=[r.photo_path,r.audio_path].filter(Boolean);
+    if(paths.length){
+      const {error:storageError}=await db.storage.from(STORAGE_BUCKET).remove(paths);
+      if(storageError){
+        console.warn("기록은 삭제됐지만 파일 삭제 중 오류:",storageError);
+        alert("독서 기록은 삭제되었습니다.\n다만 저장된 사진/녹음 파일 정리에 문제가 있었습니다.");
+      }
+    }
+
+    // 3) 화면 즉시 갱신
+    allRecords=allRecords.filter(x=>x.id!==r.id);
+    counts();
+    renderStudents();
+    await renderRecords();
+    alert(`${who}의 독서 기록을 삭제했습니다.`);
+  }catch(err){
+    console.error(err);
+    btn.disabled=false;
+    btn.textContent="🗑️ 이 기록 삭제";
+    alert("삭제하지 못했습니다.\nSupabase의 DELETE 권한 설정이 필요할 수 있습니다.");
   }
 }
 
