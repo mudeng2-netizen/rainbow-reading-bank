@@ -138,10 +138,10 @@ label{font-weight:800;display:block;margin:15px 0 7px}
 
 <script>
 // ===== Supabase 연결 =====
-const SUPABASE_URL="https://dmccgjagmyplopqnjpzd.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ugOk9DOXt2z47AXHJ4J-gw_bt3r_rf2";
+const SUPABASE_URL="https://sldqzlgprjznnoqjyhmv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_o3SNF7hS9J1hzi--YnyhEQ_sd2AYhd6";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-const STORAGE_BUCKET="reading-files";
+const R2_WORKER_URL="https://old-cake-0c82rainbow-reading-upload.mudeng2.workers.dev";
 const RECORD_TABLE="reading_records";
 const TOTALS_TABLE="student_totals";
 
@@ -172,18 +172,24 @@ const STUDENTS=[
 ];
 
 const QUESTIONS=[
-  "가장 기억에 남는 장면은 무엇인가요? 왜 기억에 남았나요?",
-  "가장 마음에 드는 인물은 누구인가요? 왜 마음에 들었나요?",
-  "주인공에게 한마디 해 준다면 무슨 말을 하고 싶나요?",
+  "제일 기억에 남는 장면은 무엇인가요? 왜 기억에 남았나요?",
+  "주인공에게 한마디 해 준다면 뭐라고 말하고 싶나요?",
   "내가 주인공이라면 어떻게 했을까요?",
-  "이 책을 읽고 어떤 기분이 들었나요? 왜 그런 기분이 들었나요?",
-  "친구에게 이 책을 소개한다면 뭐라고 말하고 싶나요?",
-  "책 속에서 가장 재미있었던 일은 무엇인가요?",
-  "책 속으로 들어갈 수 있다면 어디에 가 보고 싶나요?",
-  "이 책에서 새롭게 알게 된 것이 있나요?",
-  "이 책의 다음 이야기를 만든다면 어떤 일이 생길까요?",
-  "나와 비슷하다고 생각한 인물이 있나요? 어떤 점이 비슷한가요?",
-  "책 속 인물과 친구가 된다면 누구와 친구가 되고 싶나요?"
+  "책 속으로 들어갈 수 있다면 어느 장면에 들어가고 싶나요?",
+  "이야기의 다음 장면을 만든다면 어떤 일이 생길까요?",
+  "이 책에 새로운 제목을 붙인다면 무엇이라고 할까요?",
+  "가장 생각나는 장면을 그림으로 그린다면 무엇을 그리고 싶나요?",
+  "가장 재미있었던 장면은 어디였나요?",
+  "가장 놀랐던 장면은 무엇인가요?",
+  "주인공의 마음이 가장 궁금했던 때는 언제인가요?",
+  "책 속 인물 한 명과 친구가 된다면 누구와 친구가 되고 싶나요?",
+  "책 속에서 한 가지를 가져올 수 있다면 무엇을 가져오고 싶나요?",
+  "이야기 속 장소에 갈 수 있다면 어디에 가고 싶나요?",
+  "주인공에게 선물을 준다면 무엇을 주고 싶나요?",
+  "이야기에서 한 장면을 바꿀 수 있다면 어떻게 바꾸고 싶나요?",
+  "이 책을 친구에게 소개한다면 어떤 점을 말해주고 싶나요?",
+  "가장 마음에 든 인물은 누구인가요? 왜 그런가요?",
+  "책을 읽고 떠오른 내 경험이 있나요?"
 ];
 
 let user="";
@@ -200,6 +206,8 @@ let recorder=null;
 let chunks=[];
 let audioBlob=null;
 let audioUrl=null;
+let recordTimer=null;
+let recordSeconds=0;
 
 const $=id=>document.getElementById(id);
 
@@ -405,6 +413,8 @@ $("recordBtn").onclick=async()=>{
     };
 
     recorder.onstop=()=>{
+      clearInterval(recordTimer);
+      recordTimer=null;
       audioBlob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
       if(audioUrl) URL.revokeObjectURL(audioUrl);
       audioUrl=URL.createObjectURL(audioBlob);
@@ -416,8 +426,20 @@ $("recordBtn").onclick=async()=>{
     };
 
     recorder.start();
-    $("recordBtn").textContent="🔴 말하는 중… 다 말했으면 눌러요";
+    recordSeconds=0;
+    $("recordBtn").textContent="🔴 말하는 중… 30초 남음";
     $("recordBtn").className="bigBtn recording";
+    clearInterval(recordTimer);
+    recordTimer=setInterval(()=>{
+      recordSeconds++;
+      const left=Math.max(0,30-recordSeconds);
+      $("recordBtn").textContent=`🔴 말하는 중… ${left}초 남음`;
+      if(recordSeconds>=30){
+        clearInterval(recordTimer);
+        recordTimer=null;
+        if(recorder&&recorder.state==="recording") recorder.stop();
+      }
+    },1000);
 
   }catch(e){
     console.error(e);
@@ -425,20 +447,30 @@ $("recordBtn").onclick=async()=>{
   }
 };
 
-// 표지 사진을 업로드 전에 작게 줄여 Storage 사용량을 절약합니다.
+// 표지 사진은 확인용으로 충분한 크기만 남겨 업로드합니다.
 async function compressCover(file){
-  const bitmap=await createImageBitmap(file);
-  const maxSide=900;
-  const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
-  const width=Math.max(1,Math.round(bitmap.width*scale));
-  const height=Math.max(1,Math.round(bitmap.height*scale));
+  const maxSide=720;
+  let source,width,height;
+  try{
+    source=await createImageBitmap(file);
+    width=source.width; height=source.height;
+  }catch(e){
+    source=await new Promise((resolve,reject)=>{
+      const img=new Image(), url=URL.createObjectURL(file);
+      img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+      img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("사진을 읽지 못했어요. 다시 찍어 주세요."))};
+      img.src=url;
+    });
+    width=source.naturalWidth||source.width; height=source.naturalHeight||source.height;
+  }
+  const scale=Math.min(1,maxSide/Math.max(width,height));
   const canvas=document.createElement("canvas");
-  canvas.width=width; canvas.height=height;
-  const ctx=canvas.getContext("2d");
-  ctx.drawImage(bitmap,0,0,width,height);
-  if(bitmap.close) bitmap.close();
+  canvas.width=Math.max(1,Math.round(width*scale));
+  canvas.height=Math.max(1,Math.round(height*scale));
+  canvas.getContext("2d").drawImage(source,0,0,canvas.width,canvas.height);
+  if(source.close) source.close();
   return await new Promise((resolve,reject)=>{
-    canvas.toBlob(b=>b?resolve(b):reject(new Error("사진 압축에 실패했어요.")),"image/jpeg",0.72);
+    canvas.toBlob(b=>b?resolve(b):reject(new Error("사진 압축에 실패했어요.")),"image/jpeg",0.60);
   });
 }
 
@@ -447,6 +479,20 @@ function audioExtension(blob){
   if(type.includes("mp4")) return "m4a";
   if(type.includes("ogg")) return "ogg";
   return "webm";
+}
+
+function r2FileUrl(path){
+  return R2_WORKER_URL+"/file/"+path.split("/").map(encodeURIComponent).join("/");
+}
+async function uploadToR2(path,blob,contentType){
+  const res=await fetch(R2_WORKER_URL+"/upload?path="+encodeURIComponent(path),{
+    method:"POST",headers:{"Content-Type":contentType||blob.type||"application/octet-stream"},body:blob
+  });
+  if(!res.ok) throw new Error((await res.text().catch(()=>""))||("R2 업로드 실패 ("+res.status+")"));
+}
+async function deleteFromR2(path){
+  if(!path)return;
+  try{await fetch(r2FileUrl(path),{method:"DELETE"})}catch(e){console.warn("R2 파일 정리 실패",e)}
 }
 
 // 저장
@@ -476,24 +522,13 @@ $("save").onclick=async()=>{
     photoPath=base+"/cover.jpg";
     audioPath=base+"/answer."+audioExtension(audioBlob);
 
-    $("status").textContent="☁️ 온라인 독서통장에 저금하는 중이에요…";
-    const u1=await db.storage
-      .from(STORAGE_BUCKET)
-      .upload(photoPath,compressedPhoto,{
-        contentType:"image/jpeg",
-        upsert:false
-      });
-    if(u1.error) throw new Error("표지 사진 저장 실패: "+u1.error.message);
-
-    const u2=await db.storage
-      .from(STORAGE_BUCKET)
-      .upload(audioPath,audioBlob,{
-        contentType:audioBlob.type||"audio/webm",
-        upsert:false
-      });
-    if(u2.error){
-      await db.storage.from(STORAGE_BUCKET).remove([photoPath]);
-      throw new Error("음성 저장 실패: "+u2.error.message);
+    $("status").textContent="☁️ 표지와 목소리를 저장하는 중이에요…";
+    await uploadToR2(photoPath,compressedPhoto,"image/jpeg");
+    try{
+      await uploadToR2(audioPath,audioBlob,audioBlob.type||"audio/webm");
+    }catch(e){
+      await deleteFromR2(photoPath);
+      throw new Error("음성 저장 실패: "+(e.message||e));
     }
 
     const ins=await db.from(RECORD_TABLE).insert({
@@ -508,7 +543,7 @@ $("save").onclick=async()=>{
     });
 
     if(ins.error){
-      await db.storage.from(STORAGE_BUCKET).remove([photoPath,audioPath]);
+      await Promise.all([deleteFromR2(photoPath),deleteFromR2(audioPath)]);
       throw new Error("독서 기록 저장 실패: "+ins.error.message);
     }
 
@@ -541,6 +576,8 @@ function resetForm(){
   $("status").textContent="";
   rate=0;
   audioBlob=null;
+  clearInterval(recordTimer); recordTimer=null; recordSeconds=0;
+  if(recorder&&recorder.state==="recording") recorder.stop();
   if(audioUrl){
     URL.revokeObjectURL(audioUrl);
     audioUrl=null;
@@ -574,17 +611,8 @@ async function renderBooks(){
       let photoUrl="";
       let audioUrlSigned="";
 
-      if(b.photo_path){
-        const photo=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.photo_path,3600);
-        if(!photo.error) photoUrl=photo.data?.signedUrl||"";
-        else console.warn("표지 불러오기 실패",photo.error);
-      }
-
-      if(b.audio_path){
-        const audio=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.audio_path,3600);
-        if(!audio.error) audioUrlSigned=audio.data?.signedUrl||"";
-        else console.warn("음성 불러오기 실패",audio.error);
-      }
+      if(b.photo_path) photoUrl=r2FileUrl(b.photo_path);
+      if(b.audio_path) audioUrlSigned=r2FileUrl(b.audio_path);
 
       x.innerHTML=`
         ${photoUrl
