@@ -57,7 +57,6 @@ label{font-weight:800;display:block;margin:15px 0 7px}
 .bookPages{font-size:13px;font-weight:900;color:#39866b;margin:5px 0}
 @media(max-width:430px){.names{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:26px}#bookList{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.book{padding:8px}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="app">
@@ -137,13 +136,8 @@ label{font-weight:800;display:block;margin:15px 0 7px}
 </div>
 
 <script>
-// ===== Supabase 연결 =====
-const SUPABASE_URL="https://sldqzlgprjznnoqjyhmv.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="sb_publishable_o3SNF7hS9J1hzi--YnyhEQ_sd2AYhd6";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+// ===== Cloudflare Worker 연결 (D1 + R2) =====
 const R2_WORKER_URL="https://old-cake-0c82rainbow-reading-upload.mudeng2.workers.dev";
-const RECORD_TABLE="reading_records";
-const TOTALS_TABLE="student_totals";
 
 // ===== 학급 설정 =====
 // 화면에는 한글 이름이 보이고, Storage 경로에는 영문 ID만 사용합니다.
@@ -244,25 +238,28 @@ function badgeText(n){
 
 async function fetchRecords(){
   if(!user) return [];
-  const {data,error}=await db
-    .from(RECORD_TABLE)
-    .select("*")
-    .eq("class_name",CLASS_NAME)
-    .eq("student_name",user)
-    .order("created_at",{ascending:false});
-  if(error) throw error;
-  return data||[];
+  const res=await fetch(R2_WORKER_URL+"/api/records?student="+encodeURIComponent(user),{
+    method:"GET",
+    cache:"no-store"
+  });
+  if(!res.ok) throw new Error("독서 기록 불러오기 실패 ("+res.status+")");
+  const data=await res.json();
+  return Array.isArray(data)?data:[];
 }
 
 async function fetchBaseTotals(){
   if(!user) return {base_count:0,base_pages:0};
-  const {data,error}=await db
-    .from(TOTALS_TABLE)
-    .select("base_count,base_pages")
-    .eq("student_name",user)
-    .maybeSingle();
-  if(error) throw error;
-  return {base_count:Number(data?.base_count)||0,base_pages:Number(data?.base_pages)||0};
+  const res=await fetch(R2_WORKER_URL+"/api/totals",{
+    method:"GET",
+    cache:"no-store"
+  });
+  if(!res.ok) throw new Error("기존 누적 기록 불러오기 실패 ("+res.status+")");
+  const data=await res.json();
+  const row=Array.isArray(data)?data.find(x=>x.student_name===user):null;
+  return {
+    base_count:Number(row?.base_count)||0,
+    base_pages:Number(row?.base_pages)||0
+  };
 }
 
 function pageProgressText(totalPages){
@@ -531,20 +528,25 @@ $("save").onclick=async()=>{
       throw new Error("음성 저장 실패: "+(e.message||e));
     }
 
-    const ins=await db.from(RECORD_TABLE).insert({
-      student_name:user,
-      class_name:CLASS_NAME,
-      rating:rate,
-      question:question,
-      pages:pages,
-      reading_place:ACCESS_PLACE,
-      photo_path:photoPath,
-      audio_path:audioPath
+    const recordRes=await fetch(R2_WORKER_URL+"/api/records",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        student_name:user,
+        class_name:CLASS_NAME,
+        rating:rate,
+        question:question,
+        pages:pages,
+        reading_place:ACCESS_PLACE,
+        photo_path:photoPath,
+        audio_path:audioPath
+      })
     });
 
-    if(ins.error){
+    if(!recordRes.ok){
+      const detail=await recordRes.text().catch(()=>"");
       await Promise.all([deleteFromR2(photoPath),deleteFromR2(audioPath)]);
-      throw new Error("독서 기록 저장 실패: "+ins.error.message);
+      throw new Error("독서 기록 저장 실패: "+(detail||recordRes.status));
     }
 
     $("status").textContent="🎉 책 한 권을 독서통장에 저금했어요!";
@@ -633,7 +635,7 @@ async function renderBooks(){
   }
 }
 
-// ===== 학교/가정 접속 초기화 =====
+// ===== 학교/가정 접속 설정 =====
 applyAccessMode();
 (async function initAccess(){
   if(IS_HOME_ACCESS && requestedSid){
